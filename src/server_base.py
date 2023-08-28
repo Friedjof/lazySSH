@@ -1,9 +1,13 @@
+import socket
+import threading
+
 from abc import ABC, abstractmethod
 from sys import platform
-import socket, threading
+
+from src.client import Client
+
 
 class ServerBase(ABC):
-
     def __init__(self):
         # create a multithreaded event, which is basically a
         # thread-safe boolean
@@ -55,11 +59,12 @@ class ServerBase(ABC):
         while self._is_running.is_set():
             try:
                 self._socket.listen()
-                client, addr = self._socket.accept()
+                c_socket, addr = self._socket.accept()
+                client = Client(c_socket, host=addr[0], port=addr[1])
                 self.connection_function(client)
             except socket.timeout:
                 pass
 
     @abstractmethod
-    def connection_function(self, client):
+    def connection_function(self, client: Client):
         pass
